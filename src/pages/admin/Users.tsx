@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,12 +50,16 @@ const UserManagement = () => {
 
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
+    const formElement = e.target as HTMLFormElement;
+    const nameInput = formElement.name as HTMLInputElement;
+    const emailInput = formElement.email as HTMLInputElement;
+    const roleInput = formElement.role as HTMLSelectElement;
+    
     const newUser = {
       id: (users.length + 1).toString(),
-      name: form.name.value,
-      email: form.email.value,
-      role: form.role.value,
+      name: nameInput.value,
+      email: emailInput.value,
+      role: roleInput.value,
       status: 'Active',
     };
     
@@ -66,7 +69,7 @@ const UserManagement = () => {
       title: "User Added",
       description: `${newUser.name} has been added successfully`,
     });
-    form.reset();
+    formElement.reset();
   };
 
   const handleDeleteUser = () => {

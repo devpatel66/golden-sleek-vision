@@ -29,7 +29,7 @@ export {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup
-} from "@radix-ui/react-dropdown-menu";
+} from "./dropdown-menu";
 
 export { 
   Sheet,

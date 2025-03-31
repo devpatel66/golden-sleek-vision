@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -105,15 +104,20 @@ const ContentManagement = () => {
 
   const handleAddContent = (e: React.FormEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
+    const formElement = e.target as HTMLFormElement;
+    const titleInput = formElement.title as HTMLInputElement;
+    const categorySelect = formElement.category as HTMLSelectElement;
+    const authorInput = formElement.author as HTMLInputElement;
+    const contentTextarea = formElement.content as HTMLTextAreaElement;
+    const statusSelect = formElement.status as HTMLSelectElement;
     
     const newPost = {
       id: isEditMode && selectedPost ? selectedPost.id : (posts.length + 1).toString(),
-      title: form.title.value,
-      category: form.category.value,
-      author: form.author.value,
-      content: form.content.value,
-      status: form.status.value,
+      title: titleInput.value,
+      category: categorySelect.value,
+      author: authorInput.value,
+      content: contentTextarea.value,
+      status: statusSelect.value,
       date: new Date().toISOString().split('T')[0],
     };
     
@@ -134,7 +138,7 @@ const ContentManagement = () => {
     setIsAddContentOpen(false);
     setIsEditMode(false);
     setSelectedPost(null);
-    form.reset();
+    formElement.reset();
   };
 
   const handleDeletePost = () => {
