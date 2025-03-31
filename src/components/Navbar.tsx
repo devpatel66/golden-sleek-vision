@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon, User, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { title: "Home", path: "/" },
@@ -19,6 +20,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const { theme, setTheme } = useTheme();
+  const { isAuthenticated, user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,6 +80,40 @@ const Navbar = () => {
             >
               {theme === "dark" ? <Sun size={20} className="text-golden-400" /> : <Moon size={20} />}
             </button>
+            
+            {isAuthenticated ? (
+              <div className="relative group">
+                <button className="flex items-center space-x-2 text-sm font-medium">
+                  <User size={20} className="text-golden-500" />
+                  <span className="dark:text-white">{user?.name}</span>
+                </button>
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg overflow-hidden z-10 opacity-0 scale-95 transition-all duration-200 origin-top-right invisible group-hover:opacity-100 group-hover:scale-100 group-hover:visible">
+                  <div className="py-1">
+                    <Link
+                      to="/admin/dashboard"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Admin Dashboard
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="flex items-center space-x-1 font-montserrat font-medium transition-colors duration-300 text-golden-500 dark:text-golden-400 hover:text-golden-600 dark:hover:text-golden-500"
+              >
+                <Lock size={18} />
+                <span>Login</span>
+              </Link>
+            )}
+            
             <Link
               to="/contact"
               className="button-golden dark:bg-gradient-gold dark:text-black"
@@ -95,6 +131,16 @@ const Navbar = () => {
             >
               {theme === "dark" ? <Sun size={18} className="text-golden-400" /> : <Moon size={18} />}
             </button>
+            
+            {isAuthenticated && (
+              <Link
+                to="/admin/dashboard"
+                className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <User size={18} className="text-golden-500" />
+              </Link>
+            )}
+            
             <button
               className="focus:outline-none"
               onClick={() => setIsOpen(!isOpen)}
@@ -132,6 +178,31 @@ const Navbar = () => {
               {link.title}
             </Link>
           ))}
+          
+          {isAuthenticated ? (
+            <>
+              <Link
+                to="/admin/dashboard"
+                className="block py-2 font-montserrat font-medium text-golden-500 dark:text-golden-400"
+              >
+                Admin Dashboard
+              </Link>
+              <button
+                onClick={logout}
+                className="block w-full text-left py-2 font-montserrat font-medium text-red-500 dark:text-red-400"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="block py-2 font-montserrat font-medium text-golden-500 dark:text-golden-400"
+            >
+              Login
+            </Link>
+          )}
+          
           <Link
             to="/contact"
             className="button-golden w-full text-center block mt-4 dark:bg-gradient-gold dark:text-black"
