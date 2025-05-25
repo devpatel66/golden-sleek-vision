@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +19,7 @@ import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import Careers from "./pages/Careers";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -41,6 +41,7 @@ const App = () => (
                 <Route path="services" element={<Services />} />
                 <Route path="portfolio" element={<Portfolio />} />
                 <Route path="blog" element={<Blog />} />
+                <Route path="careers" element={<Careers />} />
                 <Route path="contact" element={<Contact />} />
                 <Route path="login" element={<Login />} />
               </Route>
