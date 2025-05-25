@@ -6,7 +6,8 @@ import {
   Users, 
   FileText, 
   Settings,
-  ChevronRight
+  ChevronRight,
+  Briefcase
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -28,6 +29,11 @@ const navItems = [
     title: 'Content', 
     path: '/admin/content', 
     icon: <FileText size={20} /> 
+  },
+  { 
+    title: 'Careers', 
+    path: '/admin/careers', 
+    icon: <Briefcase size={20} /> 
   },
   { 
     title: 'Settings', 
