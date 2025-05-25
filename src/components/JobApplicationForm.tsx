@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, X } from 'lucide-react';
+import { parseResumeFile } from '@/utils/resumeParser';
 
 interface Job {
   id: string;
@@ -29,9 +29,16 @@ interface JobApplicationFormProps {
 
 const JobApplicationForm = ({ job, isOpen, onClose }: JobApplicationFormProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isParsingResume, setIsParsingResume] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: ''
+  });
   const { toast } = useToast();
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       // Check file size (max 5MB)
@@ -57,26 +64,78 @@ const JobApplicationForm = ({ job, isOpen, onClose }: JobApplicationFormProps) =
       }
       
       setSelectedFile(file);
+      
+      // Parse resume and auto-fill form
+      setIsParsingResume(true);
+      try {
+        const parsedData = await parseResumeFile(file);
+        setFormData(parsedData);
+        
+        // Update form fields
+        const form = document.querySelector('form') as HTMLFormElement;
+        if (form) {
+          const firstNameInput = form.elements.namedItem('firstName') as HTMLInputElement;
+          const lastNameInput = form.elements.namedItem('lastName') as HTMLInputElement;
+          const emailInput = form.elements.namedItem('email') as HTMLInputElement;
+          const phoneInput = form.elements.namedItem('phone') as HTMLInputElement;
+          
+          if (firstNameInput && parsedData.firstName) firstNameInput.value = parsedData.firstName;
+          if (lastNameInput && parsedData.lastName) lastNameInput.value = parsedData.lastName;
+          if (emailInput && parsedData.email) emailInput.value = parsedData.email;
+          if (phoneInput && parsedData.phone) phoneInput.value = parsedData.phone;
+        }
+        
+        if (parsedData.firstName || parsedData.lastName || parsedData.email || parsedData.phone) {
+          toast({
+            title: "Resume parsed successfully!",
+            description: "Form fields have been auto-filled with information from your resume.",
+          });
+        }
+      } catch (error) {
+        console.error('Error parsing resume:', error);
+        toast({
+          title: "Unable to parse resume",
+          description: "Please fill in the form manually.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsParsingResume(false);
+      }
     }
   };
 
   const removeFile = () => {
     setSelectedFile(null);
-    // Reset file input
+    setFormData({ firstName: '', lastName: '', email: '', phone: '' });
+    
+    // Reset file input and form fields
     const fileInput = document.getElementById('resume') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
+    }
+    
+    const form = document.querySelector('form') as HTMLFormElement;
+    if (form) {
+      const firstNameInput = form.elements.namedItem('firstName') as HTMLInputElement;
+      const lastNameInput = form.elements.namedItem('lastName') as HTMLInputElement;
+      const emailInput = form.elements.namedItem('email') as HTMLInputElement;
+      const phoneInput = form.elements.namedItem('phone') as HTMLInputElement;
+      
+      if (firstNameInput) firstNameInput.value = '';
+      if (lastNameInput) lastNameInput.value = '';
+      if (emailInput) emailInput.value = '';
+      if (phoneInput) phoneInput.value = '';
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const formElement = e.target as HTMLFormElement;
-    const firstNameInput = formElement.firstName as HTMLInputElement;
-    const lastNameInput = formElement.lastName as HTMLInputElement;
-    const emailInput = formElement.email as HTMLInputElement;
-    const phoneInput = formElement.phone as HTMLInputElement;
-    const coverLetterTextarea = formElement.coverLetter as HTMLTextAreaElement;
+    const firstNameInput = formElement.elements.namedItem('firstName') as HTMLInputElement;
+    const lastNameInput = formElement.elements.namedItem('lastName') as HTMLInputElement;
+    const emailInput = formElement.elements.namedItem('email') as HTMLInputElement;
+    const phoneInput = formElement.elements.namedItem('phone') as HTMLInputElement;
+    const coverLetterTextarea = formElement.elements.namedItem('coverLetter') as HTMLTextAreaElement;
 
     // Basic validation
     if (!selectedFile) {
@@ -97,6 +156,7 @@ const JobApplicationForm = ({ job, isOpen, onClose }: JobApplicationFormProps) =
     // Reset form
     formElement.reset();
     setSelectedFile(null);
+    setFormData({ firstName: '', lastName: '', email: '', phone: '' });
     onClose();
   };
 
@@ -123,6 +183,7 @@ const JobApplicationForm = ({ job, isOpen, onClose }: JobApplicationFormProps) =
                   name="firstName" 
                   required 
                   placeholder="John"
+                  defaultValue={formData.firstName}
                 />
               </div>
               <div className="space-y-2">
@@ -132,6 +193,7 @@ const JobApplicationForm = ({ job, isOpen, onClose }: JobApplicationFormProps) =
                   name="lastName" 
                   required 
                   placeholder="Doe"
+                  defaultValue={formData.lastName}
                 />
               </div>
             </div>
@@ -144,6 +206,7 @@ const JobApplicationForm = ({ job, isOpen, onClose }: JobApplicationFormProps) =
                 type="email" 
                 required 
                 placeholder="john.doe@example.com"
+                defaultValue={formData.email}
               />
             </div>
 
@@ -155,6 +218,7 @@ const JobApplicationForm = ({ job, isOpen, onClose }: JobApplicationFormProps) =
                 type="tel" 
                 required 
                 placeholder="+1 (555) 123-4567"
+                defaultValue={formData.phone}
               />
             </div>
           </div>
@@ -172,7 +236,7 @@ const JobApplicationForm = ({ job, isOpen, onClose }: JobApplicationFormProps) =
                   </span>
                   <br />
                   <span className="text-xs text-gray-500">
-                    PDF, DOC, or DOCX (max 5MB)
+                    PDF, DOC, or DOCX (max 5MB) - Form will auto-fill!
                   </span>
                 </Label>
                 <Input 
@@ -194,6 +258,7 @@ const JobApplicationForm = ({ job, isOpen, onClose }: JobApplicationFormProps) =
                     <p className="text-sm font-medium">{selectedFile.name}</p>
                     <p className="text-xs text-gray-500">
                       {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                      {isParsingResume && " • Parsing resume..."}
                     </p>
                   </div>
                 </div>
@@ -202,6 +267,7 @@ const JobApplicationForm = ({ job, isOpen, onClose }: JobApplicationFormProps) =
                   variant="ghost" 
                   size="sm"
                   onClick={removeFile}
+                  disabled={isParsingResume}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -250,8 +316,9 @@ const JobApplicationForm = ({ job, isOpen, onClose }: JobApplicationFormProps) =
             <Button 
               type="submit" 
               className="flex-1 bg-golden-600 hover:bg-golden-700 text-white"
+              disabled={isParsingResume}
             >
-              Submit Application
+              {isParsingResume ? "Processing..." : "Submit Application"}
             </Button>
           </div>
         </form>
