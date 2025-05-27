@@ -13,6 +13,9 @@ import AdminUsers from "./pages/admin/Users";
 import AdminSettings from "./pages/admin/Settings";
 import AdminContent from "./pages/admin/Content";
 import AdminCareers from "./pages/admin/Careers";
+import AdminServices from "./pages/admin/Services";
+import AdminProjects from "./pages/admin/Projects";
+import AdminBlogs from "./pages/admin/Blogs";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Services from "./pages/Services";
@@ -56,6 +59,9 @@ const App = () => (
                 <Route index element={<Navigate to="/admin/dashboard" replace />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="users" element={<AdminUsers />} />
+                <Route path="services" element={<AdminServices />} />
+                <Route path="projects" element={<AdminProjects />} />
+                <Route path="blogs" element={<AdminBlogs />} />
                 <Route path="content" element={<AdminContent />} />
                 <Route path="careers" element={<AdminCareers />} />
                 <Route path="settings" element={<AdminSettings />} />

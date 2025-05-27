@@ -7,7 +7,12 @@ import {
   FileText, 
   Settings,
   ChevronRight,
-  Briefcase
+  Briefcase,
+  Wrench,
+  FolderOpen,
+  MessageSquare,
+  HelpCircle,
+  Star
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -24,6 +29,36 @@ const navItems = [
     title: 'Users', 
     path: '/admin/users', 
     icon: <Users size={20} /> 
+  },
+  { 
+    title: 'Services', 
+    path: '/admin/services', 
+    icon: <Wrench size={20} /> 
+  },
+  { 
+    title: 'Projects', 
+    path: '/admin/projects', 
+    icon: <FolderOpen size={20} /> 
+  },
+  { 
+    title: 'Blogs', 
+    path: '/admin/blogs', 
+    icon: <FileText size={20} /> 
+  },
+  { 
+    title: 'Pages', 
+    path: '/admin/pages', 
+    icon: <FileText size={20} /> 
+  },
+  { 
+    title: 'FAQ', 
+    path: '/admin/faq', 
+    icon: <HelpCircle size={20} /> 
+  },
+  { 
+    title: 'Testimonials', 
+    path: '/admin/testimonials', 
+    icon: <Star size={20} /> 
   },
   { 
     title: 'Content', 
