@@ -1,140 +1,134 @@
 
-import { useState } from 'react';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
-import {
-  Button,
-  Input,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  Badge
-} from '@/components/ui';
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
+import { Tables } from '@/integrations/supabase/types';
+import { Search, Plus, Edit, Trash2, Wrench } from 'lucide-react';
 
-// Mock data for services
-const mockServices = [
-  {
-    id: 1,
-    title: 'Web Development',
-    description: 'Custom web application development using modern technologies',
-    category: 'Development',
-    status: 'active',
-    createdAt: '2024-01-15'
-  },
-  {
-    id: 2,
-    title: 'Mobile App Development',
-    description: 'Native and cross-platform mobile application development',
-    category: 'Development',
-    status: 'active',
-    createdAt: '2024-01-10'
-  },
-  {
-    id: 3,
-    title: 'UI/UX Design',
-    description: 'User interface and experience design services',
-    category: 'Design',
-    status: 'active',
-    createdAt: '2024-01-05'
-  }
-];
+type Service = Tables<'services'>;
 
 const AdminServices = () => {
-  const [services, setServices] = useState(mockServices);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setServices(data || []);
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredServices = services.filter(service =>
     service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     service.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = (id: number) => {
-    setServices(services.filter(service => service.id !== id));
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'published':
+        return 'bg-green-100 text-green-800';
+      case 'draft':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'archived':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-golden-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Manage Services</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Create and manage your service offerings
+          <h1 className="text-3xl font-bold tracking-tight">Services</h1>
+          <p className="text-muted-foreground">
+            Manage your company services and offerings
           </p>
         </div>
-        <Button className="bg-golden-500 hover:bg-golden-600">
+        <Button className="bg-golden-500 hover:bg-golden-600 text-black">
           <Plus className="mr-2 h-4 w-4" />
           Add Service
         </Button>
       </div>
 
-      <div className="flex gap-4 mb-6">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search services..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Service</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      <Card>
+        <CardHeader>
+          <CardTitle>Service Management</CardTitle>
+          <CardDescription>
+            View and manage all your services
+          </CardDescription>
+          <div className="flex items-center space-x-2">
+            <Search className="h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search services..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredServices.map((service) => (
-              <TableRow key={service.id}>
-                <TableCell>
-                  <div>
-                    <div className="font-medium">{service.title}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {service.description}
+              <Card key={service.id} className="relative">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <Wrench className="h-5 w-5 text-golden-600" />
+                    <Badge className={getStatusColor(service.status || 'draft')}>
+                      {service.status || 'draft'}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-lg">{service.title}</CardTitle>
+                  <CardDescription>{service.category}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                    {service.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-muted-foreground">
+                      {service.created_at ? new Date(service.created_at).toLocaleDateString() : ''}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary">{service.category}</Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant={service.status === 'active' ? 'default' : 'secondary'}
-                    className={service.status === 'active' ? 'bg-green-100 text-green-800' : ''}
-                  >
-                    {service.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>{service.createdAt}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="sm">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => handleDelete(service.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
+                </CardContent>
+              </Card>
             ))}
-          </TableBody>
-        </Table>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

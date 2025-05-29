@@ -1,95 +1,117 @@
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Activity, 
-  Users, 
-  FileText, 
-  DollarSign,
-  ArrowUp,
-  ArrowDown
-} from 'lucide-react';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Legend
-} from 'recharts';
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
+import { Users, FileText, Briefcase, Wrench, TrendingUp, Eye } from 'lucide-react';
 
-// Mock data for charts
-const activityData = [
-  { name: 'Jan', value: 400 },
-  { name: 'Feb', value: 300 },
-  { name: 'Mar', value: 600 },
-  { name: 'Apr', value: 800 },
-  { name: 'May', value: 700 },
-  { name: 'Jun', value: 900 },
-  { name: 'Jul', value: 1100 },
-];
-
-const visitorData = [
-  { name: 'Mon', visitors: 400, pageViews: 700 },
-  { name: 'Tue', visitors: 600, pageViews: 900 },
-  { name: 'Wed', visitors: 500, pageViews: 850 },
-  { name: 'Thu', visitors: 700, pageViews: 1200 },
-  { name: 'Fri', visitors: 900, pageViews: 1600 },
-  { name: 'Sat', visitors: 800, pageViews: 1400 },
-  { name: 'Sun', visitors: 700, pageViews: 1300 },
-];
-
-// Dashboard stats data
-const statsData = [
-  {
-    title: 'Total Users',
-    value: '1,249',
-    icon: <Users className="h-8 w-8" />,
-    change: 12.5,
-    trending: 'up',
-  },
-  {
-    title: 'New Posts',
-    value: '34',
-    icon: <FileText className="h-8 w-8" />,
-    change: 8.2,
-    trending: 'up',
-  },
-  {
-    title: 'Revenue',
-    value: '$12,450',
-    icon: <DollarSign className="h-8 w-8" />,
-    change: -2.4,
-    trending: 'down',
-  },
-  {
-    title: 'Active Users',
-    value: '573',
-    icon: <Activity className="h-8 w-8" />,
-    change: 4.7,
-    trending: 'up',
-  },
-];
+interface DashboardStats {
+  totalUsers: number;
+  totalBlogs: number;
+  totalProjects: number;
+  totalServices: number;
+  totalViews: number;
+  pendingApplications: number;
+}
 
 const AdminDashboard = () => {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    totalBlogs: 0,
+    totalProjects: 0,
+    totalServices: 0,
+    totalViews: 0,
+    pendingApplications: 0,
+  });
   const [loading, setLoading] = useState(true);
 
-  // Simulate loading
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    const fetchStats = async () => {
+      try {
+        const [
+          { count: usersCount },
+          { count: blogsCount },
+          { count: projectsCount },
+          { count: servicesCount },
+          { data: blogsData },
+          { count: pendingAppsCount }
+        ] = await Promise.all([
+          supabase.from('users').select('*', { count: 'exact', head: true }),
+          supabase.from('blogs').select('*', { count: 'exact', head: true }),
+          supabase.from('projects').select('*', { count: 'exact', head: true }),
+          supabase.from('services').select('*', { count: 'exact', head: true }),
+          supabase.from('blogs').select('views'),
+          supabase.from('job_applications').select('*', { count: 'exact', head: true }).eq('status', 'pending')
+        ]);
+
+        const totalViews = blogsData?.reduce((sum, blog) => sum + (blog.views || 0), 0) || 0;
+
+        setStats({
+          totalUsers: usersCount || 0,
+          totalBlogs: blogsCount || 0,
+          totalProjects: projectsCount || 0,
+          totalServices: servicesCount || 0,
+          totalViews,
+          pendingApplications: pendingAppsCount || 0,
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
   }, []);
+
+  const statCards = [
+    {
+      title: 'Total Users',
+      value: stats.totalUsers,
+      description: 'Registered users',
+      icon: Users,
+      color: 'text-blue-600',
+    },
+    {
+      title: 'Blog Posts',
+      value: stats.totalBlogs,
+      description: 'Published and draft posts',
+      icon: FileText,
+      color: 'text-green-600',
+    },
+    {
+      title: 'Projects',
+      value: stats.totalProjects,
+      description: 'Total projects',
+      icon: Briefcase,
+      color: 'text-purple-600',
+    },
+    {
+      title: 'Services',
+      value: stats.totalServices,
+      description: 'Available services',
+      icon: Wrench,
+      color: 'text-orange-600',
+    },
+    {
+      title: 'Total Views',
+      value: stats.totalViews,
+      description: 'Blog post views',
+      icon: Eye,
+      color: 'text-indigo-600',
+    },
+    {
+      title: 'Pending Applications',
+      value: stats.pendingApplications,
+      description: 'Job applications to review',
+      icon: TrendingUp,
+      color: 'text-red-600',
+    },
+  ];
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-t-2 border-golden-500"></div>
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-golden-500"></div>
       </div>
     );
   }
@@ -97,89 +119,86 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome to your admin dashboard.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">
+          Welcome to the admin dashboard. Here's an overview of your application.
+        </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {statsData.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <div className="p-2 bg-muted rounded-full">{stat.icon}</div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <div className={`flex items-center text-sm mt-1 ${
-                stat.trending === 'up' ? 'text-green-500' : 'text-red-500'
-              }`}>
-                {stat.trending === 'up' ? (
-                  <ArrowUp className="mr-1 h-4 w-4" />
-                ) : (
-                  <ArrowDown className="mr-1 h-4 w-4" />
-                )}
-                <span>{stat.change}% from last month</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {statCards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <Card key={card.title}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
+                <Icon className={`h-4 w-4 ${card.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{card.value}</div>
+                <p className="text-xs text-muted-foreground">{card.description}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="col-span-1">
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
           <CardHeader>
-            <CardTitle>Activity Overview</CardTitle>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>
+              Common administrative tasks
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={activityData}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#FFCA00" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#FFCA00" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <Tooltip />
-                  <Area 
-                    type="monotone" 
-                    dataKey="value" 
-                    stroke="#FFCA00" 
-                    fillOpacity={1} 
-                    fill="url(#colorValue)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+          <CardContent className="space-y-2">
+            <div className="grid gap-2">
+              <button className="flex items-center justify-start rounded-md border p-3 text-sm hover:bg-accent">
+                <FileText className="mr-2 h-4 w-4" />
+                Create new blog post
+              </button>
+              <button className="flex items-center justify-start rounded-md border p-3 text-sm hover:bg-accent">
+                <Briefcase className="mr-2 h-4 w-4" />
+                Add new project
+              </button>
+              <button className="flex items-center justify-start rounded-md border p-3 text-sm hover:bg-accent">
+                <Wrench className="mr-2 h-4 w-4" />
+                Create new service
+              </button>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="col-span-1">
+        <Card>
           <CardHeader>
-            <CardTitle>Visitors Analytics</CardTitle>
+            <CardTitle>Recent Activity</CardTitle>
+            <CardDescription>
+              Latest updates in your system
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={visitorData}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="visitors" fill="#FFCA00" name="Visitors" />
-                  <Bar dataKey="pageViews" fill="#999" name="Page Views" />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm font-medium">New user registered</p>
+                  <p className="text-xs text-muted-foreground">2 minutes ago</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm font-medium">Blog post published</p>
+                  <p className="text-xs text-muted-foreground">1 hour ago</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="h-2 w-2 rounded-full bg-orange-500"></div>
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm font-medium">Project status updated</p>
+                  <p className="text-xs text-muted-foreground">3 hours ago</p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
