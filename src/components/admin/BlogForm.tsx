@@ -23,7 +23,7 @@ const BlogForm = ({ blog, onSuccess, onCancel }: BlogFormProps) => {
     content: blog?.content || '',
     category: blog?.category || '',
     author: blog?.author || '',
-    status: blog?.status || 'draft'
+    status: blog?.status || 'draft' as const
   });
   const [loading, setLoading] = useState(false);
 
@@ -114,7 +114,10 @@ const BlogForm = ({ blog, onSuccess, onCancel }: BlogFormProps) => {
 
       <div className="space-y-2">
         <Label htmlFor="status">Status</Label>
-        <Select value={formData.status || 'draft'} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+        <Select 
+          value={formData.status || 'draft'} 
+          onValueChange={(value: 'draft' | 'published' | 'archived') => setFormData({ ...formData, status: value })}
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

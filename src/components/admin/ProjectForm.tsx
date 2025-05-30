@@ -21,7 +21,7 @@ const ProjectForm = ({ project, onSuccess, onCancel }: ProjectFormProps) => {
     title: project?.title || '',
     description: project?.description || '',
     category: project?.category || '',
-    status: project?.status || 'planning',
+    status: project?.status || 'planning' as const,
     client: project?.client || '',
     live_url: project?.live_url || '',
     image_url: project?.image_url || ''
@@ -109,7 +109,10 @@ const ProjectForm = ({ project, onSuccess, onCancel }: ProjectFormProps) => {
 
       <div className="space-y-2">
         <Label htmlFor="status">Status</Label>
-        <Select value={formData.status || 'planning'} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+        <Select 
+          value={formData.status || 'planning'} 
+          onValueChange={(value: 'planning' | 'in-progress' | 'completed' | 'on-hold') => setFormData({ ...formData, status: value })}
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

@@ -21,7 +21,7 @@ const ServiceForm = ({ service, onSuccess, onCancel }: ServiceFormProps) => {
     title: service?.title || '',
     description: service?.description || '',
     category: service?.category || '',
-    status: service?.status || 'draft'
+    status: service?.status || 'draft' as const
   });
   const [loading, setLoading] = useState(false);
 
@@ -89,7 +89,10 @@ const ServiceForm = ({ service, onSuccess, onCancel }: ServiceFormProps) => {
 
       <div className="space-y-2">
         <Label htmlFor="status">Status</Label>
-        <Select value={formData.status || 'draft'} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+        <Select 
+          value={formData.status || 'draft'} 
+          onValueChange={(value: 'draft' | 'published' | 'archived') => setFormData({ ...formData, status: value })}
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
