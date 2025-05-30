@@ -1,11 +1,14 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Clock, DollarSign, Users } from 'lucide-react';
 import SectionHeading from '@/components/SectionHeading';
 import JobApplicationForm from '@/components/JobApplicationForm';
+import { supabase } from '@/integrations/supabase/client';
+import { Tables } from '@/integrations/supabase/types';
+
+type JobPosition = Tables<'job_positions'>;
 
 interface Job {
   id: string;
@@ -20,110 +23,55 @@ interface Job {
   postedDate: string;
 }
 
-const jobListings: Job[] = [
-  {
-    id: '1',
-    title: 'Senior Frontend Developer',
-    department: 'Engineering',
-    location: 'Remote / New York',
-    type: 'Full-time',
-    salary: '$120,000 - $150,000',
-    description: 'We are looking for a Senior Frontend Developer to join our dynamic team. You will be responsible for developing user-facing web applications using modern technologies.',
-    requirements: [
-      '5+ years of experience with React/TypeScript',
-      'Strong knowledge of HTML5, CSS3, and JavaScript',
-      'Experience with state management (Redux, Zustand)',
-      'Familiarity with testing frameworks (Jest, Cypress)',
-      'Understanding of responsive design principles'
-    ],
-    benefits: [
-      'Competitive salary and equity package',
-      'Health, dental, and vision insurance',
-      'Flexible working hours',
-      'Professional development budget',
-      'Remote work options'
-    ],
-    postedDate: '2024-01-15'
-  },
-  {
-    id: '2',
-    title: 'UI/UX Designer',
-    department: 'Design',
-    location: 'San Francisco',
-    type: 'Full-time',
-    salary: '$90,000 - $120,000',
-    description: 'Join our design team to create beautiful and intuitive user experiences. You will work closely with product managers and engineers to bring designs to life.',
-    requirements: [
-      '3+ years of UI/UX design experience',
-      'Proficiency in Figma, Sketch, or similar tools',
-      'Strong portfolio showcasing web and mobile designs',
-      'Understanding of design systems and atomic design',
-      'Experience with user research and testing'
-    ],
-    benefits: [
-      'Competitive salary and benefits',
-      'Creative and collaborative work environment',
-      'Latest design tools and equipment',
-      'Conference and workshop attendance',
-      'Flexible PTO policy'
-    ],
-    postedDate: '2024-01-20'
-  },
-  {
-    id: '3',
-    title: 'DevOps Engineer',
-    department: 'Engineering',
-    location: 'Austin, TX',
-    type: 'Full-time',
-    salary: '$110,000 - $140,000',
-    description: 'We need a DevOps Engineer to help us scale our infrastructure and improve our deployment processes. You will work on automation, monitoring, and cloud infrastructure.',
-    requirements: [
-      '4+ years of DevOps/Infrastructure experience',
-      'Experience with AWS, Azure, or GCP',
-      'Knowledge of containerization (Docker, Kubernetes)',
-      'Proficiency with CI/CD pipelines',
-      'Experience with Infrastructure as Code (Terraform, CloudFormation)'
-    ],
-    benefits: [
-      'Competitive compensation package',
-      'Health and wellness benefits',
-      'Learning and development opportunities',
-      'Cutting-edge technology stack',
-      'Work-life balance'
-    ],
-    postedDate: '2024-01-25'
-  },
-  {
-    id: '4',
-    title: 'Product Manager',
-    department: 'Product',
-    location: 'Remote',
-    type: 'Full-time',
-    salary: '$130,000 - $160,000',
-    description: 'Lead product strategy and execution for our core platform. You will work with cross-functional teams to define and deliver products that delight our customers.',
-    requirements: [
-      '5+ years of product management experience',
-      'Experience with agile development methodologies',
-      'Strong analytical and problem-solving skills',
-      'Excellent communication and leadership abilities',
-      'Background in B2B SaaS products preferred'
-    ],
-    benefits: [
-      'Equity participation',
-      'Comprehensive health benefits',
-      'Unlimited vacation policy',
-      'Home office stipend',
-      'Career growth opportunities'
-    ],
-    postedDate: '2024-02-01'
-  }
-];
-
 const Careers = () => {
+  const [jobPositions, setJobPositions] = useState<JobPosition[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
 
-  const handleApplyNow = (job: Job) => {
+  useEffect(() => {
+    fetchJobPositions();
+  }, []);
+
+  const fetchJobPositions = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('job_positions')
+        .select('*')
+        .eq('status', 'published')
+        .order('posted_date', { ascending: false });
+
+      if (error) throw error;
+      setJobPositions(data || []);
+    } catch (error) {
+      console.error('Error fetching job positions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const handleApplyNow = (jobPosition: JobPosition) => {
+    const job: Job = {
+      id: jobPosition.id,
+      title: jobPosition.title,
+      department: jobPosition.department,
+      location: jobPosition.location,
+      type: jobPosition.type,
+      salary: jobPosition.salary || 'Competitive',
+      description: jobPosition.description,
+      requirements: jobPosition.requirements || [],
+      benefits: jobPosition.benefits || [],
+      postedDate: jobPosition.posted_date || jobPosition.created_at || ''
+    };
     setSelectedJob(job);
     setIsApplicationFormOpen(true);
   };
@@ -167,64 +115,82 @@ const Careers = () => {
         <div className="container mx-auto px-4">
           <SectionHeading 
             title="Open Positions"
-            subtitle="Explore our current job openings and find your next career opportunity"
+            subtitle={`Explore our ${jobPositions.length} current job openings and find your next career opportunity`}
           />
           
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
-            {jobListings.map((job) => (
-              <Card key={job.id} className="hover:shadow-lg transition-shadow duration-300">
-                <CardHeader>
-                  <div className="flex justify-between items-start mb-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {job.department}
-                    </Badge>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      Posted {new Date(job.postedDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <CardTitle className="text-xl mb-2">{job.title}</CardTitle>
-                  <CardDescription className="text-base">
-                    {job.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {job.location}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {job.type}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="h-4 w-4" />
-                      {job.salary}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-semibold mb-2">Key Requirements:</h4>
-                    <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                      {job.requirements.slice(0, 3).map((req, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <span className="w-1 h-1 bg-golden-500 rounded-full mt-2 flex-shrink-0"></span>
-                          {req}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+          {loading ? (
+            <div className="flex h-64 items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-golden-500"></div>
+            </div>
+          ) : (
+            <>
+              {jobPositions.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-600 dark:text-gray-400 text-lg">
+                    No open positions available at the moment. Check back soon!
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
+                  {jobPositions.map((jobPosition) => (
+                    <Card key={jobPosition.id} className="hover:shadow-lg transition-shadow duration-300">
+                      <CardHeader>
+                        <div className="flex justify-between items-start mb-2">
+                          <Badge variant="secondary" className="text-xs">
+                            {jobPosition.department}
+                          </Badge>
+                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                            Posted {jobPosition.posted_date ? formatDate(jobPosition.posted_date) : 'Recently'}
+                          </span>
+                        </div>
+                        <CardTitle className="text-xl mb-2">{jobPosition.title}</CardTitle>
+                        <CardDescription className="text-base">
+                          {jobPosition.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4" />
+                            {jobPosition.location}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {jobPosition.type}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <DollarSign className="h-4 w-4" />
+                            {jobPosition.salary || 'Competitive'}
+                          </div>
+                        </div>
+                        
+                        {jobPosition.requirements && jobPosition.requirements.length > 0 && (
+                          <div>
+                            <h4 className="font-semibold mb-2">Key Requirements:</h4>
+                            <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                              {jobPosition.requirements.slice(0, 3).map((req, index) => (
+                                <li key={index} className="flex items-start gap-2">
+                                  <span className="w-1 h-1 bg-golden-500 rounded-full mt-2 flex-shrink-0"></span>
+                                  {req}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
 
-                  <Button 
-                    onClick={() => handleApplyNow(job)}
-                    className="w-full bg-golden-600 hover:bg-golden-700 text-white"
-                  >
-                    Apply Now
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                        <Button 
+                          onClick={() => handleApplyNow(jobPosition)}
+                          className="w-full bg-golden-600 hover:bg-golden-700 text-white"
+                        >
+                          Apply Now
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </section>
 

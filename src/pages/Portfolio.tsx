@@ -1,7 +1,11 @@
-
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
 import SectionHeading from "@/components/SectionHeading";
+import { supabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
+
+type Project = Tables<'projects'>;
 
 const portfolioItems = [
   {
@@ -55,6 +59,31 @@ const portfolioItems = [
 ];
 
 const Portfolio = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProjects(data || []);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       {/* Hero Section */}
@@ -86,44 +115,84 @@ const Portfolio = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading
             title="Case Studies"
-            subtitle="A showcase of our recent projects and the impact they've made for our clients."
+            subtitle={`A showcase of our ${projects.length} recent projects and the impact they've made for our clients.`}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {portfolioItems.map((item) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: item.delay }}
-                viewport={{ once: true }}
-                className="glass-card overflow-hidden group hover-scale hover-glow"
-              >
-                <div className="h-48 overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                </div>
-                <div className="p-6">
-                  <span className="inline-block px-3 py-1 text-xs font-semibold bg-golden-100 text-golden-800 rounded-full mb-3">
-                    {item.category}
-                  </span>
-                  <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    {item.description}
+          {loading ? (
+            <div className="flex h-64 items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-golden-500"></div>
+            </div>
+          ) : (
+            <>
+              {projects.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-600 dark:text-gray-400 text-lg">
+                    No completed projects to showcase at the moment.
                   </p>
-                  <a
-                    href="#"
-                    className="flex items-center text-golden-500 font-medium hover:underline"
-                  >
-                    View Case Study <ArrowRight size={16} className="ml-2" />
-                  </a>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {projects.map((project, index) => (
+                    <motion.div
+                      key={project.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                      className="glass-card overflow-hidden group hover-scale hover-glow"
+                    >
+                      <div className="h-48 overflow-hidden">
+                        {project.image_url ? (
+                          <img
+                            src={project.image_url}
+                            alt={project.title}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-golden-100 to-golden-200 flex items-center justify-center">
+                            <div className="text-golden-600 text-4xl font-bold">
+                              {project.category.charAt(0).toUpperCase()}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-6">
+                        <span className="inline-block px-3 py-1 text-xs font-semibold bg-golden-100 text-golden-800 rounded-full mb-3">
+                          {project.category}
+                        </span>
+                        <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-4">
+                          {project.description || 'No description available.'}
+                        </p>
+                        {project.client && (
+                          <p className="text-sm text-gray-500 mb-4">
+                            Client: {project.client}
+                          </p>
+                        )}
+                        {project.live_url ? (
+                          <a
+                            href={project.live_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center text-golden-500 font-medium hover:underline"
+                          >
+                            View Project <ArrowRight size={16} className="ml-2" />
+                          </a>
+                        ) : (
+                          <a
+                            href="#"
+                            className="flex items-center text-golden-500 font-medium hover:underline"
+                          >
+                            View Case Study <ArrowRight size={16} className="ml-2" />
+                          </a>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </section>
 
