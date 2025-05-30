@@ -145,10 +145,20 @@ const Blog = () => {
                         viewport={{ once: true }}
                         className="glass-card overflow-hidden group hover-scale hover-glow"
                       >
-                        <div className="h-48 overflow-hidden bg-gradient-to-br from-golden-100 to-golden-200 flex items-center justify-center">
-                          <div className="text-golden-600 text-4xl font-bold">
-                            {post.category.charAt(0).toUpperCase()}
-                          </div>
+                        <div className="h-48 overflow-hidden">
+                          {post.image_url ? (
+                            <img
+                              src={post.image_url}
+                              alt={post.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="bg-gradient-to-br from-golden-100 to-golden-200 flex items-center justify-center h-full">
+                              <div className="text-golden-600 text-4xl font-bold">
+                                {post.category.charAt(0).toUpperCase()}
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <div className="p-6">
                           <div className="flex justify-between items-center mb-3 text-sm text-gray-500">
