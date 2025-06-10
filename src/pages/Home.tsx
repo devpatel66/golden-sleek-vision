@@ -1,13 +1,73 @@
-
 import { motion } from "framer-motion";
 import { ArrowRight, Code, Cloud, ShieldCheck, Database, BarChart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import SectionHeading from "@/components/SectionHeading";
 import ServiceCard from "@/components/ServiceCard";
 import TestimonialCard from "@/components/TestimonialCard";
 import AnimatedCard from "@/components/AnimatedCard";
 
 const Home = () => {
+  // Fetch published services
+  const { data: services } = useQuery({
+    queryKey: ['services-published'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('services')
+        .select('*')
+        .eq('status', 'published')
+        .limit(5);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch recent projects
+  const { data: projects } = useQuery({
+    queryKey: ['projects-recent'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false })
+        .limit(3);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch recent blog posts
+  const { data: blogs } = useQuery({
+    queryKey: ['blogs-recent'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
+        .limit(3);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Icon mapping for services
+  const getServiceIcon = (category: string) => {
+    const iconMap: { [key: string]: any } = {
+      'Software Development': Code,
+      'Cloud Computing': Cloud,
+      'Cybersecurity': ShieldCheck,
+      'Database Management': Database,
+      'IT Consultancy': BarChart,
+    };
+    return iconMap[category] || Code;
+  };
+
   return (
     <>
       {/* Hero Section */}
@@ -72,51 +132,114 @@ const Home = () => {
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <ServiceCard
-              title="Custom Software Development"
-              description="Tailor-made software solutions designed to address your specific business challenges and requirements."
-              icon={Code}
-              delay={0.1}
-            />
-            <ServiceCard
-              title="Cloud Computing"
-              description="Scalable and secure cloud infrastructure to boost efficiency and reduce operational costs."
-              icon={Cloud}
-              delay={0.2}
-            />
-            <ServiceCard
-              title="Cybersecurity"
-              description="Comprehensive security solutions to protect your valuable data and digital assets."
-              icon={ShieldCheck}
-              delay={0.3}
-            />
-            <ServiceCard
-              title="Database Management"
-              description="Efficient database design, implementation, and maintenance for optimal performance."
-              icon={Database}
-              delay={0.4}
-            />
-            <ServiceCard
-              title="IT Consultancy"
-              description="Strategic technology guidance to help you make informed decisions and achieve your goals."
-              icon={BarChart}
-              delay={0.5}
-            />
-            <div className="glass-card p-6 flex flex-col items-center justify-center text-center">
-              <h3 className="text-xl font-bold mb-3">Explore More</h3>
+            {services?.map((service, index) => (
+              <ServiceCard
+                key={service.id}
+                title={service.title}
+                description={service.description || ''}
+                icon={getServiceIcon(service.category)}
+                delay={index * 0.1}
+              />
+            ))}
+            
+            {/* Show "Explore More" card if there are services */}
+            {services && services.length > 0 && (
+              <div className="glass-card p-6 flex flex-col items-center justify-center text-center">
+                <h3 className="text-xl font-bold mb-3">Explore More</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Discover our full range of IT services and solutions.
+                </p>
+                <Link
+                  to="/services"
+                  className="flex items-center text-golden-500 font-medium hover:underline"
+                >
+                  View all services <ArrowRight size={16} className="ml-2" />
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Fallback if no services */}
+          {(!services || services.length === 0) && (
+            <div className="text-center py-12">
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Discover our full range of IT services and solutions.
+                Services will appear here once they are published.
               </p>
-              <Link
-                to="/services"
-                className="flex items-center text-golden-500 font-medium hover:underline"
-              >
-                View all services <ArrowRight size={16} className="ml-2" />
+              <Link to="/services" className="button-golden">
+                Learn More About Our Services
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Projects Section */}
+      {projects && projects.length > 0 && (
+        <section className="py-20">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionHeading
+              title="Recent Projects"
+              subtitle="Take a look at some of our latest successful projects and implementations."
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {projects.map((project, index) => (
+                <motion.div
+                  key={project.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="glass-card overflow-hidden group hover:shadow-xl transition-shadow duration-300"
+                >
+                  {project.image_url && (
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={project.image_url}
+                        alt={project.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-golden-500 font-medium">{project.category}</span>
+                      {project.client && (
+                        <span className="text-sm text-gray-500">{project.client}</span>
+                      )}
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">{project.title}</h3>
+                    {project.description && (
+                      <p className="text-gray-600 dark:text-gray-400 mb-4">
+                        {project.description.length > 100 
+                          ? `${project.description.substring(0, 100)}...` 
+                          : project.description}
+                      </p>
+                    )}
+                    {project.live_url && (
+                      <a
+                        href={project.live_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-golden-500 font-medium hover:underline"
+                      >
+                        View Project <ArrowRight size={16} className="ml-2" />
+                      </a>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <Link to="/portfolio" className="button-golden">
+                View All Projects
               </Link>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* About Section Preview */}
       <section className="py-20">
@@ -246,6 +369,72 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Blog Section */}
+      {blogs && blogs.length > 0 && (
+        <section className="py-20 bg-gray-50 dark:bg-gray-900">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionHeading
+              title="Latest from Our Blog"
+              subtitle="Stay updated with the latest trends, insights, and news from the world of technology."
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {blogs.map((blog, index) => (
+                <motion.article
+                  key={blog.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="glass-card overflow-hidden group hover:shadow-xl transition-shadow duration-300"
+                >
+                  {blog.image_url && (
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={blog.image_url}
+                        alt={blog.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-golden-500 font-medium">{blog.category}</span>
+                      <span className="text-sm text-gray-500">
+                        {blog.published_at ? new Date(blog.published_at).toLocaleDateString() : ''}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold mb-3 group-hover:text-golden-500 transition-colors">
+                      {blog.title}
+                    </h3>
+                    {blog.excerpt && (
+                      <p className="text-gray-600 dark:text-gray-400 mb-4">
+                        {blog.excerpt.length > 120 
+                          ? `${blog.excerpt.substring(0, 120)}...` 
+                          : blog.excerpt}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500">By {blog.author}</span>
+                      {blog.views && (
+                        <span className="text-sm text-gray-500">{blog.views} views</span>
+                      )}
+                    </div>
+                  </div>
+                </motion.article>
+              ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <Link to="/blog" className="button-golden">
+                Read More Articles
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-20 relative overflow-hidden">
