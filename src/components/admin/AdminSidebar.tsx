@@ -1,118 +1,71 @@
 
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
+import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
-  Users, 
+  Settings, 
   FileText, 
-  Settings,
-  ChevronRight,
-  Briefcase,
-  Wrench,
+  Users, 
+  Briefcase, 
   FolderOpen,
+  PenTool,
   MessageSquare,
-  HelpCircle,
   Star
-} from 'lucide-react';
+} from "lucide-react";
 
 interface AdminSidebarProps {
   open: boolean;
 }
 
-const navItems = [
-  { 
-    title: 'Dashboard', 
-    path: '/admin/dashboard', 
-    icon: <LayoutDashboard size={20} /> 
-  },
-  { 
-    title: 'Users', 
-    path: '/admin/users', 
-    icon: <Users size={20} /> 
-  },
-  { 
-    title: 'Services', 
-    path: '/admin/services', 
-    icon: <Wrench size={20} /> 
-  },
-  { 
-    title: 'Projects', 
-    path: '/admin/projects', 
-    icon: <FolderOpen size={20} /> 
-  },
-  { 
-    title: 'Blogs', 
-    path: '/admin/blogs', 
-    icon: <FileText size={20} /> 
-  },
-  { 
-    title: 'Pages', 
-    path: '/admin/pages', 
-    icon: <FileText size={20} /> 
-  },
-  { 
-    title: 'FAQ', 
-    path: '/admin/faq', 
-    icon: <HelpCircle size={20} /> 
-  },
-  { 
-    title: 'Testimonials', 
-    path: '/admin/testimonials', 
-    icon: <Star size={20} /> 
-  },
-  { 
-    title: 'Content', 
-    path: '/admin/content', 
-    icon: <FileText size={20} /> 
-  },
-  { 
-    title: 'Careers', 
-    path: '/admin/careers', 
-    icon: <Briefcase size={20} /> 
-  },
-  { 
-    title: 'Settings', 
-    path: '/admin/settings', 
-    icon: <Settings size={20} /> 
-  },
-];
-
 const AdminSidebar = ({ open }: AdminSidebarProps) => {
   const location = useLocation();
-  
+
+  const menuItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
+    { icon: Briefcase, label: "Services", path: "/admin/services" },
+    { icon: FolderOpen, label: "Projects", path: "/admin/projects" },
+    { icon: PenTool, label: "Blogs", path: "/admin/blogs" },
+    { icon: FileText, label: "Content", path: "/admin/content" },
+    { icon: MessageSquare, label: "Careers", path: "/admin/careers" },
+    { icon: Star, label: "Testimonials", path: "/admin/testimonials" },
+    { icon: Users, label: "Users", path: "/admin/users" },
+    { icon: Settings, label: "Settings", path: "/admin/settings" },
+  ];
+
   return (
-    <aside 
+    <aside
       className={cn(
-        "fixed left-0 z-20 h-[calc(100vh-64px)] transform bg-sidebar border-r border-border transition-all duration-300 dark:bg-gray-800",
+        "fixed left-0 top-16 z-40 h-[calc(100vh-64px)] bg-background border-r transition-all duration-300",
         open ? "w-64" : "w-20"
       )}
     >
-      <div className="h-full">
-        <nav className="mt-6 flex flex-col space-y-2 px-3">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "flex items-center rounded-md px-3 py-3 text-sm transition-colors duration-200",
-                location.pathname === item.path
-                  ? "bg-golden-500/10 text-golden-500 dark:bg-golden-500/20 dark:text-golden-400"
-                  : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50"
-              )}
-            >
-              <span className="mr-3 flex h-6 w-6 items-center justify-center">{item.icon}</span>
-              {open && (
-                <>
-                  <span className="flex-1">{item.title}</span>
-                  {location.pathname === item.path && (
-                    <ChevronRight size={16} />
+      <nav className="h-full px-4 py-6">
+        <ul className="space-y-2">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+            
+            return (
+              <li key={item.path}>
+                <Link
+                  to={item.path}
+                  className={cn(
+                    "flex items-center px-3 py-2 rounded-lg transition-colors",
+                    isActive
+                      ? "bg-golden-100 text-golden-700 dark:bg-golden-900 dark:text-golden-300"
+                      : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                   )}
-                </>
-              )}
-            </Link>
-          ))}
-        </nav>
-      </div>
+                >
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  {open && (
+                    <span className="ml-3 text-sm font-medium">{item.label}</span>
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
     </aside>
   );
 };
