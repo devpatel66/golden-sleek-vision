@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { ArrowRight, Code, Cloud, ShieldCheck, Database, BarChart } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -49,6 +50,22 @@ const Home = () => {
         .select('*')
         .eq('status', 'published')
         .order('published_at', { ascending: false })
+        .limit(3);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch published testimonials
+  const { data: testimonials } = useQuery({
+    queryKey: ['testimonials-published'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('testimonials')
+        .select('*')
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
         .limit(3);
       
       if (error) throw error;
@@ -342,30 +359,48 @@ const Home = () => {
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <TestimonialCard
-              name="Sarah Johnson"
-              position="CTO"
-              company="Quantum Enterprises"
-              content="Golden Age Infotech transformed our outdated systems into a streamlined digital ecosystem. Their expertise in cloud solutions saved us time and resources while improving overall efficiency."
-              rating={5}
-              delay={0.1}
-            />
-            <TestimonialCard
-              name="Michael Davis"
-              position="CEO"
-              company="InnovateTech"
-              content="The cybersecurity solutions provided by Golden Age Infotech have given us peace of mind. Their proactive approach to security has protected us from multiple threats."
-              rating={5}
-              delay={0.2}
-            />
-            <TestimonialCard
-              name="Jennifer Lee"
-              position="Operations Director"
-              company="Nexus Systems"
-              content="Working with Golden Age Infotech has been a game-changer for our business. Their custom software development addressed our specific needs perfectly."
-              rating={4}
-              delay={0.3}
-            />
+            {testimonials && testimonials.length > 0 ? (
+              testimonials.map((testimonial, index) => (
+                <TestimonialCard
+                  key={testimonial.id}
+                  name={testimonial.name}
+                  position={testimonial.position}
+                  company={testimonial.company}
+                  content={testimonial.content}
+                  rating={testimonial.rating}
+                  image={testimonial.image_url || undefined}
+                  delay={index * 0.1}
+                />
+              ))
+            ) : (
+              // Fallback testimonials if none in database
+              <>
+                <TestimonialCard
+                  name="Sarah Johnson"
+                  position="CTO"
+                  company="Quantum Enterprises"
+                  content="Golden Age Infotech transformed our outdated systems into a streamlined digital ecosystem. Their expertise in cloud solutions saved us time and resources while improving overall efficiency."
+                  rating={5}
+                  delay={0.1}
+                />
+                <TestimonialCard
+                  name="Michael Davis"
+                  position="CEO"
+                  company="InnovateTech"
+                  content="The cybersecurity solutions provided by Golden Age Infotech have given us peace of mind. Their proactive approach to security has protected us from multiple threats."
+                  rating={5}
+                  delay={0.2}
+                />
+                <TestimonialCard
+                  name="Jennifer Lee"
+                  position="Operations Director"
+                  company="Nexus Systems"
+                  content="Working with Golden Age Infotech has been a game-changer for our business. Their custom software development addressed our specific needs perfectly."
+                  rating={4}
+                  delay={0.3}
+                />
+              </>
+            )}
           </div>
         </div>
       </section>

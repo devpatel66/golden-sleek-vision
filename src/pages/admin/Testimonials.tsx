@@ -12,43 +12,46 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
-import { Search, Plus, Edit, Trash2, FileText } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Star } from 'lucide-react';
 
-type Content = Tables<'content'>;
+type Testimonial = Tables<'testimonials'>;
 
-const Content = () => {
-  const [contentItems, setContentItems] = useState<Content[]>([]);
+const Testimonials = () => {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingContent, setEditingContent] = useState<Content | undefined>();
+  const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | undefined>();
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
+    position: '',
+    company: '',
     content: '',
-    author: '',
-    status: 'draft' as 'draft' | 'published' | 'archived'
+    rating: 5,
+    image_url: '',
+    status: 'published' as 'draft' | 'published' | 'archived'
   });
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchContent();
+    fetchTestimonials();
   }, []);
 
-  const fetchContent = async () => {
+  const fetchTestimonials = async () => {
     try {
       const { data, error } = await supabase
-        .from('content')
+        .from('testimonials')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setContentItems(data || []);
+      setTestimonials(data || []);
     } catch (error) {
-      console.error('Error fetching content:', error);
+      console.error('Error fetching testimonials:', error);
       toast({
         title: "Error",
-        description: "Failed to load content items.",
+        description: "Failed to load testimonials.",
         variant: "destructive",
       });
     } finally {
@@ -61,40 +64,48 @@ const Content = () => {
     setSubmitting(true);
 
     try {
-      if (editingContent) {
+      if (editingTestimonial) {
         const { error } = await supabase
-          .from('content')
+          .from('testimonials')
           .update(formData)
-          .eq('id', editingContent.id);
+          .eq('id', editingTestimonial.id);
         
         if (error) throw error;
         
         toast({
-          title: "Content Updated",
-          description: "Content item has been updated successfully.",
+          title: "Testimonial Updated",
+          description: "Testimonial has been updated successfully.",
         });
       } else {
         const { error } = await supabase
-          .from('content')
+          .from('testimonials')
           .insert([formData]);
         
         if (error) throw error;
         
         toast({
-          title: "Content Created",
-          description: "New content item has been created successfully.",
+          title: "Testimonial Created",
+          description: "New testimonial has been created successfully.",
         });
       }
 
       setDialogOpen(false);
-      setEditingContent(undefined);
-      setFormData({ title: '', content: '', author: '', status: 'draft' });
-      fetchContent();
+      setEditingTestimonial(undefined);
+      setFormData({
+        name: '',
+        position: '',
+        company: '',
+        content: '',
+        rating: 5,
+        image_url: '',
+        status: 'published'
+      });
+      fetchTestimonials();
     } catch (error) {
-      console.error('Error saving content:', error);
+      console.error('Error saving testimonial:', error);
       toast({
         title: "Error",
-        description: "Failed to save content item.",
+        description: "Failed to save testimonial.",
         variant: "destructive",
       });
     } finally {
@@ -105,47 +116,58 @@ const Content = () => {
   const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('content')
+        .from('testimonials')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
       
       toast({
-        title: "Content Deleted",
-        description: "Content item has been deleted successfully.",
+        title: "Testimonial Deleted",
+        description: "Testimonial has been deleted successfully.",
       });
-      fetchContent();
+      fetchTestimonials();
     } catch (error) {
-      console.error('Error deleting content:', error);
+      console.error('Error deleting testimonial:', error);
       toast({
         title: "Error",
-        description: "Failed to delete content item.",
+        description: "Failed to delete testimonial.",
         variant: "destructive",
       });
     }
   };
 
-  const handleEdit = (content: Content) => {
-    setEditingContent(content);
+  const handleEdit = (testimonial: Testimonial) => {
+    setEditingTestimonial(testimonial);
     setFormData({
-      title: content.title,
-      content: content.content || '',
-      author: content.author,
-      status: (content.status || 'draft') as 'draft' | 'published' | 'archived'
+      name: testimonial.name,
+      position: testimonial.position,
+      company: testimonial.company,
+      content: testimonial.content,
+      rating: testimonial.rating,
+      image_url: testimonial.image_url || '',
+      status: (testimonial.status || 'published') as 'draft' | 'published' | 'archived'
     });
     setDialogOpen(true);
   };
 
   const handleAdd = () => {
-    setEditingContent(undefined);
-    setFormData({ title: '', content: '', author: '', status: 'draft' });
+    setEditingTestimonial(undefined);
+    setFormData({
+      name: '',
+      position: '',
+      company: '',
+      content: '',
+      rating: 5,
+      image_url: '',
+      status: 'published'
+    });
     setDialogOpen(true);
   };
 
-  const filteredItems = contentItems.filter(item =>
-    item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.author.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTestimonials = testimonials.filter(testimonial =>
+    testimonial.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    testimonial.company.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusColor = (status: string) => {
@@ -173,51 +195,90 @@ const Content = () => {
     <div className="container mx-auto py-10">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-semibold">Content Management</h1>
-          <p className="text-muted-foreground">Manage content items and publications</p>
+          <h1 className="text-3xl font-semibold">Testimonials Management</h1>
+          <p className="text-muted-foreground">Manage client testimonials and reviews</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={handleAdd} className="bg-golden-500 hover:bg-golden-600 text-black">
               <Plus className="mr-2 h-4 w-4" />
-              Add Content
+              Add Testimonial
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>{editingContent ? 'Edit Content' : 'Create New Content'}</DialogTitle>
+              <DialogTitle>{editingTestimonial ? 'Edit Testimonial' : 'Create New Testimonial'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    type="text"
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Enter client name"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="position">Position</Label>
+                  <Input
+                    type="text"
+                    id="position"
+                    value={formData.position}
+                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                    placeholder="Enter position"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="company">Company</Label>
+                  <Input
+                    type="text"
+                    id="company"
+                    value={formData.company}
+                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                    placeholder="Enter company name"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="rating">Rating</Label>
+                  <select
+                    id="rating"
+                    value={formData.rating}
+                    onChange={(e) => setFormData({ ...formData, rating: parseInt(e.target.value) })}
+                    className="w-full rounded-md border border-gray-200 px-3 py-2 shadow-sm focus:border-golden-500 focus:outline-none focus:ring-golden-500"
+                  >
+                    {[1, 2, 3, 4, 5].map(rating => (
+                      <option key={rating} value={rating}>{rating} Star{rating !== 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
               <div>
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="image_url">Image URL</Label>
                 <Input
-                  type="text"
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Enter title"
-                  required
+                  type="url"
+                  id="image_url"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  placeholder="Enter image URL (optional)"
                 />
               </div>
               <div>
-                <Label htmlFor="author">Author</Label>
-                <Input
-                  type="text"
-                  id="author"
-                  value={formData.author}
-                  onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                  placeholder="Enter author name"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="content">Content</Label>
+                <Label htmlFor="content">Testimonial Content</Label>
                 <Textarea
                   id="content"
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="Enter content"
+                  placeholder="Enter testimonial content"
                   rows={4}
+                  required
                 />
               </div>
               <div>
@@ -238,7 +299,7 @@ const Content = () => {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={submitting} className="bg-golden-500 hover:bg-golden-600 text-black">
-                  {submitting ? 'Saving...' : editingContent ? 'Update Content' : 'Create Content'}
+                  {submitting ? 'Saving...' : editingTestimonial ? 'Update Testimonial' : 'Create Testimonial'}
                 </Button>
               </div>
             </form>
@@ -246,15 +307,15 @@ const Content = () => {
         </Dialog>
       </div>
 
-      {/* Content Listing */}
+      {/* Testimonials Listing */}
       <Card>
         <CardHeader>
-          <CardTitle>Content List</CardTitle>
-          <CardDescription>Manage existing content items.</CardDescription>
+          <CardTitle>Testimonials List</CardTitle>
+          <CardDescription>Manage existing client testimonials.</CardDescription>
           <div className="flex items-center space-x-2">
             <Search className="h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search content..."
+              placeholder="Search testimonials..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
@@ -265,34 +326,44 @@ const Content = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Author</TableHead>
+                <TableHead>Client</TableHead>
+                <TableHead>Company</TableHead>
+                <TableHead>Rating</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created At</TableHead>
-                <TableHead>Updated At</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredItems.map((item) => (
-                <TableRow key={item.id}>
+              {filteredTestimonials.map((testimonial) => (
+                <TableRow key={testimonial.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-2">
-                      <FileText className="h-4 w-4 text-golden-600" />
-                      <span>{item.title}</span>
+                      <Star className="h-4 w-4 text-golden-600" />
+                      <div>
+                        <div>{testimonial.name}</div>
+                        <div className="text-sm text-gray-500">{testimonial.position}</div>
+                      </div>
                     </div>
                   </TableCell>
-                  <TableCell>{item.author}</TableCell>
+                  <TableCell>{testimonial.company}</TableCell>
                   <TableCell>
-                    <Badge className={getStatusColor(item.status || 'draft')}>
-                      {item.status || 'draft'}
+                    <div className="flex items-center">
+                      {Array.from({ length: testimonial.rating }).map((_, i) => (
+                        <Star key={i} size={16} className="text-golden-500 fill-golden-500" />
+                      ))}
+                      <span className="ml-1 text-sm">({testimonial.rating})</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(testimonial.status || 'published')}>
+                      {testimonial.status || 'published'}
                     </Badge>
                   </TableCell>
-                  <TableCell>{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</TableCell>
-                  <TableCell>{item.updated_at ? new Date(item.updated_at).toLocaleDateString() : ''}</TableCell>
+                  <TableCell>{new Date(testimonial.created_at).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(testimonial)}>
                         <Edit className="h-4 w-4" />
                       </Button>
                       <AlertDialog>
@@ -305,12 +376,12 @@ const Content = () => {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              This action cannot be undone. This will permanently delete the content item.
+                              This action cannot be undone. This will permanently delete the testimonial.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(item.id)}>
+                            <AlertDialogAction onClick={() => handleDelete(testimonial.id)}>
                               Delete
                             </AlertDialogAction>
                           </AlertDialogFooter>
@@ -328,4 +399,4 @@ const Content = () => {
   );
 };
 
-export default Content;
+export default Testimonials;
