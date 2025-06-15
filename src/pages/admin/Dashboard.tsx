@@ -2,13 +2,14 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, FileText, Briefcase, Wrench, TrendingUp, Eye } from 'lucide-react';
+import { Users, FileText, Briefcase, Wrench, TrendingUp, Eye, Star } from 'lucide-react';
 
 interface DashboardStats {
   totalUsers: number;
   totalBlogs: number;
   totalProjects: number;
   totalServices: number;
+  totalTestimonials: number;
   totalViews: number;
   pendingApplications: number;
 }
@@ -19,6 +20,7 @@ const AdminDashboard = () => {
     totalBlogs: 0,
     totalProjects: 0,
     totalServices: 0,
+    totalTestimonials: 0,
     totalViews: 0,
     pendingApplications: 0,
   });
@@ -32,6 +34,7 @@ const AdminDashboard = () => {
           { count: blogsCount },
           { count: projectsCount },
           { count: servicesCount },
+          { count: testimonialsCount },
           { data: blogsData },
           { count: pendingAppsCount }
         ] = await Promise.all([
@@ -39,6 +42,7 @@ const AdminDashboard = () => {
           supabase.from('blogs').select('*', { count: 'exact', head: true }),
           supabase.from('projects').select('*', { count: 'exact', head: true }),
           supabase.from('services').select('*', { count: 'exact', head: true }),
+          supabase.from('testimonials').select('*', { count: 'exact', head: true }),
           supabase.from('blogs').select('views'),
           supabase.from('job_applications').select('*', { count: 'exact', head: true }).eq('status', 'pending')
         ]);
@@ -50,6 +54,7 @@ const AdminDashboard = () => {
           totalBlogs: blogsCount || 0,
           totalProjects: projectsCount || 0,
           totalServices: servicesCount || 0,
+          totalTestimonials: testimonialsCount || 0,
           totalViews,
           pendingApplications: pendingAppsCount || 0,
         });
@@ -91,6 +96,13 @@ const AdminDashboard = () => {
       description: 'Available services',
       icon: Wrench,
       color: 'text-orange-600',
+    },
+    {
+      title: 'Testimonials',
+      value: stats.totalTestimonials,
+      description: 'Customer testimonials',
+      icon: Star,
+      color: 'text-yellow-600',
     },
     {
       title: 'Total Views',
