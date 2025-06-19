@@ -37,11 +37,17 @@ export const useSiteSettings = () => {
 
   const fetchSettings = async () => {
     try {
+      console.log('Fetching settings...');
       const { data, error } = await supabase
         .from('site_settings')
         .select('*');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching settings:', error);
+        throw error;
+      }
+
+      console.log('Fetched settings data:', data);
 
       // Transform the flat structure to our nested structure
       const transformedSettings: SiteSettings = {
@@ -71,6 +77,7 @@ export const useSiteSettings = () => {
         },
       };
 
+      console.log('Transformed settings:', transformedSettings);
       setSiteSettings(transformedSettings);
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -86,13 +93,18 @@ export const useSiteSettings = () => {
 
   const updateSetting = async (key: string, value: string) => {
     try {
+      console.log(`Updating setting ${key} to ${value}`);
       const { error } = await supabase
         .from('site_settings')
         .update({ value, updated_at: new Date().toISOString() })
         .eq('key', key);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating setting:', error);
+        throw error;
+      }
 
+      console.log(`Successfully updated ${key}`);
       // Refresh settings after update
       await fetchSettings();
       
@@ -110,22 +122,27 @@ export const useSiteSettings = () => {
 
   const updateMultipleSettings = async (updates: Array<{ key: string; value: string }>) => {
     try {
+      console.log('Updating multiple settings:', updates);
+      
       // Update multiple settings in parallel
-      const promises = updates.map(({ key, value }) =>
-        supabase
+      const promises = updates.map(({ key, value }) => {
+        console.log(`Updating ${key} to ${value}`);
+        return supabase
           .from('site_settings')
           .update({ value, updated_at: new Date().toISOString() })
-          .eq('key', key)
-      );
+          .eq('key', key);
+      });
 
       const results = await Promise.all(promises);
       
       // Check if any updates failed
       const hasError = results.some(result => result.error);
       if (hasError) {
+        console.error('Some updates failed:', results.filter(r => r.error));
         throw new Error('One or more updates failed');
       }
 
+      console.log('All updates successful');
       // Refresh settings after all updates
       await fetchSettings();
       

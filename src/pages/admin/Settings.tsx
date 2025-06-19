@@ -43,17 +43,18 @@ const AdminSettings = () => {
     );
   }
 
-  const handleGeneralSubmit = async (e: React.FormEvent) => {
+  const handleGeneralSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
-    const form = e.target as HTMLFormElement;
+    
+    const formData = new FormData(e.currentTarget);
     
     const updates = [
-      { key: 'site_name', value: form.siteName.value },
-      { key: 'site_description', value: form.siteDescription.value },
-      { key: 'contact_email', value: form.contactEmail.value },
-      { key: 'phone', value: form.phone.value },
-      { key: 'address', value: form.address.value },
+      { key: 'site_name', value: formData.get('siteName') as string || '' },
+      { key: 'site_description', value: formData.get('siteDescription') as string || '' },
+      { key: 'contact_email', value: formData.get('contactEmail') as string || '' },
+      { key: 'phone', value: formData.get('phone') as string || '' },
+      { key: 'address', value: formData.get('address') as string || '' },
     ];
     
     const success = await updateMultipleSettings(updates);
@@ -66,16 +67,17 @@ const AdminSettings = () => {
     setSaving(false);
   };
 
-  const handleSocialSubmit = async (e: React.FormEvent) => {
+  const handleSocialSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
-    const form = e.target as HTMLFormElement;
+    
+    const formData = new FormData(e.currentTarget);
     
     const updates = [
-      { key: 'facebook_url', value: form.facebook.value },
-      { key: 'twitter_url', value: form.twitter.value },
-      { key: 'instagram_url', value: form.instagram.value },
-      { key: 'linkedin_url', value: form.linkedin.value },
+      { key: 'facebook_url', value: formData.get('facebook') as string || '' },
+      { key: 'twitter_url', value: formData.get('twitter') as string || '' },
+      { key: 'instagram_url', value: formData.get('instagram') as string || '' },
+      { key: 'linkedin_url', value: formData.get('linkedin') as string || '' },
     ];
     
     const success = await updateMultipleSettings(updates);
@@ -93,15 +95,16 @@ const AdminSettings = () => {
     await updateMultipleSettings(updates);
   };
 
-  const handleSecuritySubmit = async (e: React.FormEvent) => {
+  const handleSecuritySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
-    const form = e.target as HTMLFormElement;
+    
+    const formData = new FormData(e.currentTarget);
     
     const updates = [
-      { key: 'two_factor_auth', value: form.twoFactorAuth.checked.toString() },
-      { key: 'password_reset_interval', value: form.passwordResetInterval.value },
-      { key: 'session_timeout', value: form.sessionTimeout.value },
+      { key: 'two_factor_auth', value: (formData.get('twoFactorAuth') === 'on').toString() },
+      { key: 'password_reset_interval', value: formData.get('passwordResetInterval') as string || '90' },
+      { key: 'session_timeout', value: formData.get('sessionTimeout') as string || '30' },
     ];
     
     const success = await updateMultipleSettings(updates);
