@@ -91,7 +91,7 @@ const Navbar = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg overflow-hidden z-10 opacity-0 scale-95 transition-all duration-200 origin-top-right invisible group-hover:opacity-100 group-hover:scale-100 group-hover:visible">
                   <div className="py-1">
                     <Link
-                      to="/admin/dashboard"
+                      to="/admin"
                       className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       Admin Dashboard
@@ -135,7 +135,7 @@ const Navbar = () => {
             
             {isAuthenticated && (
               <Link
-                to="/admin/dashboard"
+                to="/admin"
                 className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 <User size={18} className="text-golden-500" />
@@ -183,7 +183,7 @@ const Navbar = () => {
           {isAuthenticated ? (
             <>
               <Link
-                to="/admin/dashboard"
+                to="/admin"
                 className="block py-2 font-montserrat font-medium text-golden-500 dark:text-golden-400"
               >
                 Admin Dashboard

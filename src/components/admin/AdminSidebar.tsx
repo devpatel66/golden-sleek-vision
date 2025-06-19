@@ -43,7 +43,7 @@ const AdminSidebar = ({ open }: AdminSidebarProps) => {
         <ul className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname === item.path || (item.path === "/admin" && location.pathname === "/admin/dashboard");
             
             return (
               <li key={item.path}>

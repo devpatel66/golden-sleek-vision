@@ -61,7 +61,7 @@ const App = () => (
 
               {/* Admin Routes */}
               <Route
-                path="/admin"
+                path="/admin/*"
                 element={
                   <ProtectedRoute>
                     <AdminLayout />
@@ -69,6 +69,7 @@ const App = () => (
                 }
               >
                 <Route index element={<Dashboard />} />
+                <Route path="dashboard" element={<Dashboard />} />
                 <Route path="services" element={<AdminServices />} />
                 <Route path="projects" element={<AdminProjects />} />
                 <Route path="blogs" element={<AdminBlogs />} />
