@@ -3,104 +3,89 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTheme } from '@/hooks/useTheme';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { 
   Globe, 
   Mail, 
   MessageSquare, 
   BellRing, 
   Shield, 
-  Key
+  Key,
+  Loader2
 } from 'lucide-react';
 
-// Mock site settings
-const initialSettings = {
-  general: {
-    siteName: 'Golden Age Infotech',
-    siteDescription: 'Professional IT solutions for modern businesses',
-    contactEmail: 'info@goldenageinfotech.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Tech Boulevard, Silicon Valley, CA 94043',
-  },
-  social: {
-    facebook: 'https://facebook.com/goldenageinfotech',
-    twitter: 'https://twitter.com/goldenageinfo',
-    instagram: 'https://instagram.com/goldenageinfotech',
-    linkedin: 'https://linkedin.com/company/goldenageinfotech',
-  },
-  notifications: {
-    emailAlerts: true,
-    newUserNotifications: true,
-    marketingEmails: false,
-    activitySummary: true,
-  },
-  security: {
-    twoFactorAuth: false,
-    passwordResetInterval: '90',
-    sessionTimeout: '30',
-  }
-};
-
 const AdminSettings = () => {
-  const [settings, setSettings] = useState(initialSettings);
   const [activeTab, setActiveTab] = useState('general');
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
+  const { settings, loading, updateMultipleSettings } = useSiteSettings();
 
-  const handleGeneralSubmit = (e: React.FormEvent) => {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading settings...</span>
+      </div>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p>Failed to load settings. Please try refreshing the page.</p>
+      </div>
+    );
+  }
+
+  const handleGeneralSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     
-    const updatedSettings = {
-      ...settings,
-      general: {
-        siteName: form.siteName.value,
-        siteDescription: form.siteDescription.value,
-        contactEmail: form.contactEmail.value,
-        phone: form.phone.value,
-        address: form.address.value,
-      }
-    };
+    const updates = [
+      { key: 'site_name', value: form.siteName.value },
+      { key: 'site_description', value: form.siteDescription.value },
+      { key: 'contact_email', value: form.contactEmail.value },
+      { key: 'phone', value: form.phone.value },
+      { key: 'address', value: form.address.value },
+    ];
     
-    setSettings(updatedSettings);
-    toast({
-      title: "Settings Updated",
-      description: "General settings have been updated successfully",
-    });
+    const success = await updateMultipleSettings(updates);
+    if (success) {
+      toast({
+        title: "Settings Updated",
+        description: "General settings have been updated successfully",
+      });
+    }
   };
 
-  const handleSocialSubmit = (e: React.FormEvent) => {
+  const handleSocialSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     
-    const updatedSettings = {
-      ...settings,
-      social: {
-        facebook: form.facebook.value,
-        twitter: form.twitter.value,
-        instagram: form.instagram.value,
-        linkedin: form.linkedin.value,
-      }
-    };
+    const updates = [
+      { key: 'facebook_url', value: form.facebook.value },
+      { key: 'twitter_url', value: form.twitter.value },
+      { key: 'instagram_url', value: form.instagram.value },
+      { key: 'linkedin_url', value: form.linkedin.value },
+    ];
     
-    setSettings(updatedSettings);
-    toast({
-      title: "Settings Updated",
-      description: "Social media settings have been updated successfully",
-    });
+    const success = await updateMultipleSettings(updates);
+    if (success) {
+      toast({
+        title: "Settings Updated",
+        description: "Social media settings have been updated successfully",
+      });
+    }
   };
 
-  const handleNotificationChange = (key: string, value: boolean) => {
-    setSettings({
-      ...settings,
-      notifications: {
-        ...settings.notifications,
-        [key]: value,
-      }
-    });
+  const handleNotificationChange = async (key: string, value: boolean) => {
+    const updates = [{ key, value: value.toString() }];
+    await updateMultipleSettings(updates);
   };
 
   const saveNotificationSettings = () => {
@@ -110,24 +95,23 @@ const AdminSettings = () => {
     });
   };
 
-  const handleSecuritySubmit = (e: React.FormEvent) => {
+  const handleSecuritySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     
-    const updatedSettings = {
-      ...settings,
-      security: {
-        twoFactorAuth: form.twoFactorAuth.checked,
-        passwordResetInterval: form.passwordResetInterval.value,
-        sessionTimeout: form.sessionTimeout.value,
-      }
-    };
+    const updates = [
+      { key: 'two_factor_auth', value: form.twoFactorAuth.checked.toString() },
+      { key: 'password_reset_interval', value: form.passwordResetInterval.value },
+      { key: 'session_timeout', value: form.sessionTimeout.value },
+    ];
     
-    setSettings(updatedSettings);
-    toast({
-      title: "Settings Updated",
-      description: "Security settings have been updated successfully",
-    });
+    const success = await updateMultipleSettings(updates);
+    if (success) {
+      toast({
+        title: "Settings Updated",
+        description: "Security settings have been updated successfully",
+      });
+    }
   };
 
   return (
@@ -308,15 +292,10 @@ const AdminSettings = () => {
                     <p className="text-xs text-muted-foreground">Receive important alerts via email</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <input 
-                    type="checkbox" 
-                    id="emailAlerts" 
-                    checked={settings.notifications.emailAlerts}
-                    onChange={(e) => handleNotificationChange('emailAlerts', e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-golden-500 focus:ring-golden-500"
-                  />
-                </div>
+                <Switch
+                  checked={settings.notifications.emailAlerts}
+                  onCheckedChange={(checked) => handleNotificationChange('email_alerts', checked)}
+                />
               </div>
               
               <div className="flex items-center justify-between">
@@ -327,15 +306,10 @@ const AdminSettings = () => {
                     <p className="text-xs text-muted-foreground">Get notified when new users register</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <input 
-                    type="checkbox" 
-                    id="newUserNotifications" 
-                    checked={settings.notifications.newUserNotifications}
-                    onChange={(e) => handleNotificationChange('newUserNotifications', e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-golden-500 focus:ring-golden-500"
-                  />
-                </div>
+                <Switch
+                  checked={settings.notifications.newUserNotifications}
+                  onCheckedChange={(checked) => handleNotificationChange('new_user_notifications', checked)}
+                />
               </div>
               
               <div className="flex items-center justify-between">
@@ -346,15 +320,10 @@ const AdminSettings = () => {
                     <p className="text-xs text-muted-foreground">Receive marketing and promotional emails</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <input 
-                    type="checkbox" 
-                    id="marketingEmails" 
-                    checked={settings.notifications.marketingEmails}
-                    onChange={(e) => handleNotificationChange('marketingEmails', e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-golden-500 focus:ring-golden-500"
-                  />
-                </div>
+                <Switch
+                  checked={settings.notifications.marketingEmails}
+                  onCheckedChange={(checked) => handleNotificationChange('marketing_emails', checked)}
+                />
               </div>
               
               <div className="flex items-center justify-between">
@@ -365,15 +334,10 @@ const AdminSettings = () => {
                     <p className="text-xs text-muted-foreground">Weekly summary of site activity</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <input 
-                    type="checkbox" 
-                    id="activitySummary" 
-                    checked={settings.notifications.activitySummary}
-                    onChange={(e) => handleNotificationChange('activitySummary', e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-golden-500 focus:ring-golden-500"
-                  />
-                </div>
+                <Switch
+                  checked={settings.notifications.activitySummary}
+                  onCheckedChange={(checked) => handleNotificationChange('activity_summary', checked)}
+                />
               </div>
             </CardContent>
             <CardFooter>
@@ -403,15 +367,11 @@ const AdminSettings = () => {
                       <p className="text-xs text-muted-foreground">Add an extra layer of security to your account</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <input 
-                      type="checkbox" 
-                      id="twoFactorAuth" 
-                      name="twoFactorAuth"
-                      defaultChecked={settings.security.twoFactorAuth}
-                      className="h-4 w-4 rounded border-gray-300 text-golden-500 focus:ring-golden-500"
-                    />
-                  </div>
+                  <Switch
+                    id="twoFactorAuth"
+                    name="twoFactorAuth"
+                    defaultChecked={settings.security.twoFactorAuth}
+                  />
                 </div>
                 
                 <div className="space-y-2">
