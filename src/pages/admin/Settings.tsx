@@ -21,6 +21,7 @@ import {
 
 const AdminSettings = () => {
   const [activeTab, setActiveTab] = useState('general');
+  const [saving, setSaving] = useState(false);
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const { settings, loading, updateMultipleSettings } = useSiteSettings();
@@ -44,6 +45,7 @@ const AdminSettings = () => {
 
   const handleGeneralSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
     const form = e.target as HTMLFormElement;
     
     const updates = [
@@ -61,10 +63,12 @@ const AdminSettings = () => {
         description: "General settings have been updated successfully",
       });
     }
+    setSaving(false);
   };
 
   const handleSocialSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
     const form = e.target as HTMLFormElement;
     
     const updates = [
@@ -81,6 +85,7 @@ const AdminSettings = () => {
         description: "Social media settings have been updated successfully",
       });
     }
+    setSaving(false);
   };
 
   const handleNotificationChange = async (key: string, value: boolean) => {
@@ -88,15 +93,9 @@ const AdminSettings = () => {
     await updateMultipleSettings(updates);
   };
 
-  const saveNotificationSettings = () => {
-    toast({
-      title: "Settings Updated",
-      description: "Notification settings have been updated successfully",
-    });
-  };
-
   const handleSecuritySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
     const form = e.target as HTMLFormElement;
     
     const updates = [
@@ -112,6 +111,7 @@ const AdminSettings = () => {
         description: "Security settings have been updated successfully",
       });
     }
+    setSaving(false);
   };
 
   return (
@@ -184,7 +184,12 @@ const AdminSettings = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button type="submit" className="bg-golden-500 hover:bg-golden-600 text-black">
+                <Button 
+                  type="submit" 
+                  className="bg-golden-500 hover:bg-golden-600 text-black"
+                  disabled={saving}
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Save General Settings
                 </Button>
               </CardFooter>
@@ -269,7 +274,12 @@ const AdminSettings = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button type="submit" className="bg-golden-500 hover:bg-golden-600 text-black">
+                <Button 
+                  type="submit" 
+                  className="bg-golden-500 hover:bg-golden-600 text-black"
+                  disabled={saving}
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Save Social Media Settings
                 </Button>
               </CardFooter>
@@ -342,7 +352,10 @@ const AdminSettings = () => {
             </CardContent>
             <CardFooter>
               <Button 
-                onClick={saveNotificationSettings}
+                onClick={() => toast({
+                  title: "Settings Updated",
+                  description: "Notification settings have been updated successfully",
+                })}
                 className="bg-golden-500 hover:bg-golden-600 text-black"
               >
                 Save Notification Settings
@@ -407,7 +420,12 @@ const AdminSettings = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button type="submit" className="bg-golden-500 hover:bg-golden-600 text-black">
+                <Button 
+                  type="submit" 
+                  className="bg-golden-500 hover:bg-golden-600 text-black"
+                  disabled={saving}
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Save Security Settings
                 </Button>
               </CardFooter>
