@@ -1,6 +1,5 @@
-
 import { motion } from "framer-motion";
-import { ArrowRight, Code, Cloud, ShieldCheck, Database, BarChart } from "lucide-react";
+import { ArrowRight, Code, Cloud, ShieldCheck, Database, BarChart, Users, Award, Target, CheckCircle, Mail, TrendingUp, Globe, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -140,6 +139,57 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Company Stats Section */}
+      <section className="py-16 bg-white dark:bg-black">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="text-4xl md:text-5xl font-bold text-golden-500 mb-2">500+</div>
+              <p className="text-gray-600 dark:text-gray-400">Projects Completed</p>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="text-4xl md:text-5xl font-bold text-golden-500 mb-2">200+</div>
+              <p className="text-gray-600 dark:text-gray-400">Happy Clients</p>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="text-4xl md:text-5xl font-bold text-golden-500 mb-2">10+</div>
+              <p className="text-gray-600 dark:text-gray-400">Years Experience</p>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="text-4xl md:text-5xl font-bold text-golden-500 mb-2">24/7</div>
+              <p className="text-gray-600 dark:text-gray-400">Support Available</p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Services Section */}
       <section className="py-20 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -187,6 +237,127 @@ const Home = () => {
               </Link>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Technology Stack Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <SectionHeading
+            title="Technologies We Master"
+            subtitle="Our expertise spans across the latest technologies and frameworks to deliver cutting-edge solutions."
+          />
+
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            {[
+              { name: "React", logo: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=100&h=100&fit=crop" },
+              { name: "Node.js", logo: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=100&h=100&fit=crop" },
+              { name: "Python", logo: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=100&h=100&fit=crop" },
+              { name: "AWS", logo: "https://images.unsplash.com/photo-1523474253046-8cd2748b5fd2?w=100&h=100&fit=crop" },
+              { name: "Docker", logo: "https://images.unsplash.com/photo-1605745341112-85968b19335b?w=100&h=100&fit=crop" },
+              { name: "MongoDB", logo: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop" }
+            ].map((tech, index) => (
+              <motion.div
+                key={tech.name}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="flex flex-col items-center p-4 glass-card hover-scale"
+              >
+                <img
+                  src={tech.logo}
+                  alt={tech.name}
+                  className="w-16 h-16 rounded-lg mb-3 object-cover"
+                />
+                <span className="text-sm font-medium text-center">{tech.name}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section className="py-20 bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <SectionHeading
+            title="Why Choose Golden Age Infotech?"
+            subtitle="We combine technical expertise with business acumen to deliver solutions that drive real results."
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <AnimatedCard delay={0.1}>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-golden-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Award className="text-golden-500" size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Industry Expertise</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Deep domain knowledge across multiple industries with proven track record of successful implementations.
+                </p>
+              </div>
+            </AnimatedCard>
+
+            <AnimatedCard delay={0.2}>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-golden-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="text-golden-500" size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Dedicated Team</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Skilled professionals committed to your success with 24/7 support and maintenance services.
+                </p>
+              </div>
+            </AnimatedCard>
+
+            <AnimatedCard delay={0.3}>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-golden-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target className="text-golden-500" size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Results-Driven</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Focus on delivering measurable business value through technology solutions that scale with your growth.
+                </p>
+              </div>
+            </AnimatedCard>
+
+            <AnimatedCard delay={0.4}>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-golden-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="text-golden-500" size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Scalable Solutions</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Future-proof architectures designed to grow with your business needs and handle increasing demands.
+                </p>
+              </div>
+            </AnimatedCard>
+
+            <AnimatedCard delay={0.5}>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-golden-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Globe className="text-golden-500" size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Global Reach</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Serving clients worldwide with remote collaboration tools and flexible engagement models.
+                </p>
+              </div>
+            </AnimatedCard>
+
+            <AnimatedCard delay={0.6}>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-golden-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Zap className="text-golden-500" size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Rapid Delivery</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Agile development methodologies ensure quick turnaround times without compromising on quality.
+                </p>
+              </div>
+            </AnimatedCard>
+          </div>
         </div>
       </section>
 
@@ -258,6 +429,91 @@ const Home = () => {
         </section>
       )}
 
+      {/* Process Section */}
+      <section className="py-20 bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <SectionHeading
+            title="Our Development Process"
+            subtitle="A proven methodology that ensures successful project delivery from concept to deployment."
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="relative">
+                <div className="w-20 h-20 bg-golden-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-black">1</span>
+                </div>
+                <div className="hidden lg:block absolute top-10 left-full w-full h-0.5 bg-golden-500/30"></div>
+              </div>
+              <h3 className="text-xl font-bold mb-3">Discovery</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Understanding your business needs, goals, and technical requirements through detailed consultation.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="relative">
+                <div className="w-20 h-20 bg-golden-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-black">2</span>
+                </div>
+                <div className="hidden lg:block absolute top-10 left-full w-full h-0.5 bg-golden-500/30"></div>
+              </div>
+              <h3 className="text-xl font-bold mb-3">Planning</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Creating detailed project roadmaps, technical architecture, and resource allocation strategies.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="relative">
+                <div className="w-20 h-20 bg-golden-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-black">3</span>
+                </div>
+                <div className="hidden lg:block absolute top-10 left-full w-full h-0.5 bg-golden-500/30"></div>
+              </div>
+              <h3 className="text-xl font-bold mb-3">Development</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Agile development with regular updates, testing, and client feedback integration throughout the process.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="w-20 h-20 bg-golden-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-black">4</span>
+              </div>
+              <h3 className="text-xl font-bold mb-3">Deployment</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Seamless deployment with comprehensive testing, training, and ongoing support for your team.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* About Section Preview */}
       <section className="py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -271,7 +527,7 @@ const Home = () => {
             >
               <div className="relative">
                 <img
-                  src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  src="https://images.unsplash.com/photo-1600880292203-39b9d08a9b1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                   alt="About Golden Age Infotech"
                   className="rounded-xl shadow-xl"
                 />
@@ -346,6 +602,43 @@ const Home = () => {
                 Learn More About Us
               </Link>
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Client Logos Section */}
+      <section className="py-16 bg-white dark:bg-black">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <SectionHeading
+            title="Trusted by Leading Companies"
+            subtitle="We're proud to work with innovative companies across various industries."
+          />
+
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center opacity-70">
+            {[
+              "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=150&h=80&fit=crop",
+              "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=150&h=80&fit=crop",
+              "https://images.unsplash.com/photo-1516321335469-31706a17aaef?w=150&h=80&fit=crop",
+              "https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=150&h=80&fit=crop",
+              "https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=150&h=80&fit=crop",
+              "https://images.unsplash.com/photo-1560472355-536de3962603?w=150&h=80&fit=crop"
+            ].map((logo, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 0.7, scale: 1 }}
+                whileHover={{ opacity: 1, scale: 1.05 }}
+                transition={{ duration: 0.3 }}
+                viewport={{ once: true }}
+                className="flex items-center justify-center p-4"
+              >
+                <img
+                  src={logo}
+                  alt={`Client ${index + 1}`}
+                  className="max-w-full h-12 object-contain filter grayscale hover:grayscale-0 transition-all duration-300"
+                />
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -470,6 +763,38 @@ const Home = () => {
           </div>
         </section>
       )}
+
+      {/* Newsletter Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <AnimatedCard className="max-w-4xl mx-auto text-center py-12 px-8 bg-gradient-to-r from-golden-500/10 to-golden-200/5">
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-golden-500/20 rounded-full flex items-center justify-center">
+                <Mail className="text-golden-500" size={32} />
+              </div>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Stay Updated with Tech Insights
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+              Subscribe to our newsletter and get the latest technology trends, industry insights, and exclusive updates delivered to your inbox.
+            </p>
+            <div className="flex flex-col sm:flex-row max-w-md mx-auto gap-4">
+              <input
+                type="email"
+                placeholder="Enter your email address"
+                className="flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-golden-500"
+              />
+              <button className="button-golden whitespace-nowrap">
+                Subscribe Now
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mt-4">
+              No spam, unsubscribe at any time. We respect your privacy.
+            </p>
+          </AnimatedCard>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="py-20 relative overflow-hidden">
